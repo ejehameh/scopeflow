@@ -1,5 +1,5 @@
-import { ReviewPageClient } from "@/components/review/review-page-client";
+import { ScopeLanding } from "@/components/scope-landing";
 
 export default function Page() {
-  return <ReviewPageClient />;
+  return <ScopeLanding />;
 }
