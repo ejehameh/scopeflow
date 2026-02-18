@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ApproveButton } from "@/components/approve-button";
 import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function ScopeLanding() {
   return (
@@ -39,7 +40,7 @@ export function ScopeLanding() {
               </div>
               <Badge
                 variant="secondary"
-                className="bg-amber-100 text-amber-800 border-amber-200 shrink-0 mt-1"
+                className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700 shrink-0 mt-1"
               >
                 Awaiting Review
               </Badge>
@@ -74,6 +75,7 @@ function LandingNav() {
       <div className="flex h-14 items-center justify-between gap-4 px-6">
         <Logo projectName="Inventory Management System" />
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <Button asChild variant="outline" size="default" className="gap-1.5">
             <Link href="/review">
               <MessageSquareText className="size-4" />

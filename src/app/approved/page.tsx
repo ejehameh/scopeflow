@@ -7,6 +7,7 @@ import { MessageSquareText, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 import { AnimatedCheckIcon } from "@/components/animated-checkIcon";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function ApprovedPage() {
   useEffect(() => {
@@ -39,12 +40,15 @@ export default function ApprovedPage() {
       <header className="border-b border-border bg-background shrink-0">
         <div className="flex h-14 items-center justify-between gap-4 px-6">
           <Logo />
-          <Button asChild variant="outline" size="default" className="gap-1.5">
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button asChild variant="outline" size="default" className="gap-1.5">
             <Link href="/">
               <ArrowLeft className="size-4" />
               Back to Scope
             </Link>
           </Button>
+          </div>
         </div>
       </header>
 

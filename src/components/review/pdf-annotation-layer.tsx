@@ -243,7 +243,7 @@ function CommentPin({
           className={cn(
             "shadow-md bg-gray-800 cursor-pointer active:scale-95 p-1 rounded-t-full rounded-r-full border-2 transition-transform",
             comment.resolved
-              ? "size-8 rounded-t-full p-1 rounded-r-full flex items-center justify-center text-xs font-bold bg-green-100 text-green-700 border-green-300"
+              ? "size-8 rounded-t-full p-1 rounded-r-full flex items-center justify-center text-xs font-bold bg-green-100 text-green-700 border-green-300 dark:bg-green-900/50 dark:text-green-300 dark:border-green-700"
               : "border-none",
             isActive && "ring-2 ring-primary ring-offset-2 scale-110"
           )}

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ApproveButton } from "@/components/approve-button";
 import { Logo } from "@/components/logo";
 import { UserAvatar } from "@/components/user-avatar";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function ReviewNav() {
   return (
@@ -21,17 +22,18 @@ export function ReviewNav() {
           <Logo projectName="Inventory Management System" />
           <Badge
             variant="secondary"
-            className="bg-amber-100 text-amber-800 border-amber-200"
+            className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700"
           >
             In Review
           </Badge>
         </div>
 
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
           <div className="flex -space-x-2">
-            <UserAvatar letter="S" size="lg" title="Sarah" className="border-2 border-white" />
-            <UserAvatar letter="A" size="lg" title="Alex" className="border-2 border-white" />
+            <UserAvatar letter="S" size="lg" title="Sarah" className="border-2 border-background" />
+            <UserAvatar letter="A" size="lg" title="Alex" className="border-2 border-background" />
           </div>
           <ApproveButton size="default" className="gap-1.5" />
         </div>
