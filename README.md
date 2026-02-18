@@ -2,6 +2,8 @@
 
 A collaborative Scope of Work review tool where agencies share SOW documents with clients, who can then annotate the PDF, leave threaded comments, and approve the scope — all in the browser.
 
+![ScopeFlow — Review workspace](public/screenshot.png)
+
 ## Running Locally
 
 **Prerequisites:** Node.js >= 18 and npm.
