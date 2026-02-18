@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CommentThread } from "./comment-thread";
 import type { Comment } from "@/types/discussion";
-import { cn } from "@/lib/utils";
 
 const INITIAL_COMMENTS: Comment[] = [
   {
@@ -85,7 +84,9 @@ export function DiscussionPanel() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-2 pb-3 border-b border-border">
-        <MessageSquare className="size-4 text-muted-foreground" />
+        <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <MessageSquare className="size-4" />
+        </div>
         <h2 className="text-sm font-semibold text-foreground">Discussion</h2>
         {hasNewActivity && (
           <span

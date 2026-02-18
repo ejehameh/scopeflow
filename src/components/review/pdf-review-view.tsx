@@ -5,6 +5,7 @@ import { Document, Page, Thumbnail, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import { cn } from "@/lib/utils";
+import { PdfReviewSkeleton } from "./pdf-review-skeleton";
 
 // Configure worker in the same module where we use Document/Page (required by react-pdf)
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -79,11 +80,7 @@ export function PdfReviewView() {
     <Document
       file={PDF_URL}
       onLoadSuccess={({ numPages: n }) => setNumPages(n)}
-      loading={
-        <div className="flex h-64 items-center justify-center text-muted-foreground">
-          Loading PDF…
-        </div>
-      }
+      loading={<PdfReviewSkeleton />}
       error={
         <div className="flex h-64 items-center justify-center text-destructive">
           Failed to load PDF.

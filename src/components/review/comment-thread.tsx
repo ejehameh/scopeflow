@@ -30,7 +30,7 @@ function SingleComment({
   isReply?: boolean;
 }) {
   return (
-    <div className={cn("flex gap-3", isReply && "ml-11")}>
+    <div className={cn("flex gap-3", isReply && "flex items-start")}>
       <AuthorAvatar letter={author.avatarLetter} />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground">
@@ -42,8 +42,17 @@ function SingleComment({
             </span>
           ) : null}
         </p>
-        <p className="text-sm text-foreground/90 mt-0.5">{body}</p>
-        <p className="text-xs text-muted-foreground mt-1">{timeAgo}</p>
+        {/* Chat bubble */}
+        <div
+          className={cn(
+            "mt-1.5 rounded-2xl px-4 py-2.5 text-sm text-foreground",
+            "bg-muted/90 border border-border/80 shadow-sm",
+            "rounded-tl-md"
+          )}
+        >
+          {body}
+        </div>
+        <p className="text-xs text-muted-foreground mt-1.5">{timeAgo}</p>
       </div>
     </div>
   );
@@ -68,7 +77,7 @@ export function CommentThread({ comment, onReply }: CommentThreadProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       <SingleComment
         author={comment.author}
         body={comment.body}
@@ -117,17 +126,45 @@ export function CommentThread({ comment, onReply }: CommentThreadProps) {
           )}
         </div>
       )}
+      {/* Replies with Facebook-style tree connector lines */}
       {comment.replies.length > 0 && (
-        <div className="flex flex-col gap-4 border-l-2 border-muted pl-4 ml-4">
-          {comment.replies.map((reply) => (
-            <SingleComment
-              key={reply.id}
-              author={reply.author}
-              body={reply.body}
-              timeAgo={reply.timeAgo}
-              isReply
-            />
-          ))}
+        <div className="relative mt-2">
+          {comment.replies.map((reply, index) => {
+            const isFirst = index === 0;
+            const isLast = index === comment.replies.length - 1;
+            return (
+              <div
+                key={reply.id}
+                className="relative pl-11 pt-3 first:pt-0"
+              >
+                {/* ╰ L-branch: vertical down to branch point + curve + horizontal to avatar */}
+                <div
+                  className="absolute border-l-2 border-b-2 border-gray-300 dark:border-gray-600 rounded-bl-lg"
+                  style={{
+                    left: 10,
+                    top: isFirst ? -90 : 0,
+                    width: 26,
+                    height: isFirst ? 110 : 20,
+                  }}
+                  aria-hidden
+                />
+                {/* Vertical continuation to next reply (skip for last) */}
+                {!isLast && (
+                  <div
+                    className="absolute bg-gray-300 dark:bg-gray-600"
+                    style={{ left: 3, top: isFirst ? 20 : 20, bottom: 0, width: 2 }}
+                    aria-hidden
+                  />
+                )}
+                <SingleComment
+                  author={reply.author}
+                  body={reply.body}
+                  timeAgo={reply.timeAgo}
+                  isReply
+                />
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
