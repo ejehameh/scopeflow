@@ -6,13 +6,15 @@ import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import { cn } from "@/lib/utils";
 import { PdfReviewSkeleton } from "./pdf-review-skeleton";
+import { PdfAnnotationLayer } from "./pdf-annotation-layer";
+import { useComments } from "@/context/comments-context";
 
-// Configure worker in the same module where we use Document/Page (required by react-pdf)
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const PDF_URL = "/scope-of-work.pdf";
 
 export function PdfReviewView() {
+  const { setNumPages: setCtxNumPages, closePopup } = useComments();
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
@@ -20,7 +22,6 @@ export function PdfReviewView() {
   const isScrollingRef = useRef(false);
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
-  // Measure container for responsive page width (client-only to avoid hydration mismatch)
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -33,7 +34,6 @@ export function PdfReviewView() {
   }, []);
 
   const scrollToPage = useCallback((pageNumber: number) => {
-    // Suppress observer updates during programmatic scroll
     isScrollingRef.current = true;
     if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
     scrollTimerRef.current = setTimeout(() => {
@@ -45,7 +45,6 @@ export function PdfReviewView() {
     el?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
-  // Observe which page is in view to sync currentPage on manual scroll only
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container || numPages === 0) return;
@@ -62,10 +61,7 @@ export function PdfReviewView() {
           if (!entry.isIntersecting) continue;
           const n = entry.target.getAttribute("data-pdf-page");
           if (n && entry.intersectionRatio > (best?.ratio ?? 0))
-            best = {
-              page: Number.parseInt(n, 10),
-              ratio: entry.intersectionRatio,
-            };
+            best = { page: Number.parseInt(n, 10), ratio: entry.intersectionRatio };
         }
         if (best != null) setCurrentPage(best.page);
       },
@@ -76,10 +72,18 @@ export function PdfReviewView() {
     return () => observer.disconnect();
   }, [numPages]);
 
+  const handleLoadSuccess = useCallback(
+    ({ numPages: n }: { numPages: number }) => {
+      setNumPages(n);
+      setCtxNumPages(n);
+    },
+    [setCtxNumPages]
+  );
+
   return (
     <Document
       file={PDF_URL}
-      onLoadSuccess={({ numPages: n }) => setNumPages(n)}
+      onLoadSuccess={handleLoadSuccess}
       loading={<PdfReviewSkeleton />}
       error={
         <div className="flex h-64 items-center justify-center text-destructive">
@@ -124,10 +128,11 @@ export function PdfReviewView() {
             )}
         </aside>
 
-        {/* Center: scrollable full pages */}
+        {/* Center: scrollable full pages with annotation overlays */}
         <div
           ref={scrollContainerRef}
-          className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden bg-muted/30 rounded-lg"
+          className="flex-1 min-w-0 overflow-y-auto pr-10 overflow-x-hidden bg-muted/30 rounded-lg"
+          onClick={() => closePopup()}
         >
           {numPages > 0 &&
             Array.from({ length: numPages }, (_, i) => i + 1).map(
@@ -136,15 +141,18 @@ export function PdfReviewView() {
                   key={pageNumber}
                   id={`pdf-page-${pageNumber}`}
                   data-pdf-page={pageNumber}
-                  className="flex justify-center px-4 py-4 border-b border-border last:border-b-0"
+                  className="relative flex justify-center px-4 py-4 border-b border-border last:border-b-0"
                 >
-                  <Page
-                    pageNumber={pageNumber}
-                    width={containerWidth ?? 680}
-                    renderTextLayer
-                    renderAnnotationLayer
-                    className="shadow-sm bg-white"
-                  />
+                  <div className="relative">
+                    <Page
+                      pageNumber={pageNumber}
+                      width={containerWidth ?? 680}
+                      renderTextLayer
+                      renderAnnotationLayer
+                      className="shadow-sm bg-white"
+                    />
+                    <PdfAnnotationLayer pageNumber={pageNumber} />
+                  </div>
                 </div>
               )
             )}

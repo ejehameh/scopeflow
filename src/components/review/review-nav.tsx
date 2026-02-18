@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ApproveButton } from "@/components/approve-button";
 import { Logo } from "@/components/logo";
+import { UserAvatar } from "@/components/user-avatar";
 
 export function ReviewNav() {
   return (
@@ -29,18 +30,8 @@ export function ReviewNav() {
 
         <div className="flex items-center gap-4">
           <div className="flex -space-x-2">
-            <div
-              className="size-9 rounded-full border-2 border-white bg-red-800 flex items-center justify-center text-xs font-medium relative  text-white"
-              title="Sarah"
-            >
-              S
-            </div>
-            <div
-              className="size-9 rounded-full border-2 border-white bg-teal-700 flex items-center justify-center text-xs font-medium text-white"
-              title="Alex"
-            >
-              A
-            </div>
+            <UserAvatar letter="S" size="lg" title="Sarah" className="border-2 border-white" />
+            <UserAvatar letter="A" size="lg" title="Alex" className="border-2 border-white" />
           </div>
           <ApproveButton size="default" className="gap-1.5" />
         </div>

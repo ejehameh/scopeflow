@@ -125,3 +125,11 @@ body {
   @apply bg-background text-foreground;
 }
 }
+
+.react-pdf__Page__textContent ::selection {
+  background: oklch(0.51 0.23 277 / 25%);
+}
+
+.react-pdf__Page__textContent {
+  z-index: 5;
+}

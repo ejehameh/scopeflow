@@ -1,91 +1,38 @@
 "use client";
 
-import { useState } from "react";
-import { MessageSquare, Paperclip, Send } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { MessageSquare, MessageSquareText, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { CommentThread } from "./comment-thread";
-import type { Comment } from "@/types/discussion";
-
-const INITIAL_COMMENTS: Comment[] = [
-  {
-    id: "1",
-    author: {
-      name: "Alex",
-      role: "Logistics Co",
-      avatarLetter: "A",
-    },
-    body: "Can we add real-time tracking to Phase 2? Our warehouse needs to see where products are at all times.",
-    timeAgo: "About 27 minutes ago",
-    sectionId: "phase-2",
-    replies: [
-      {
-        id: "1-1",
-        author: {
-          name: "Sarah Miller",
-          role: "Team",
-          avatarLetter: "S",
-        },
-        body: "Yes, we can include that. We've updated the scope in Phase 2. It will shift the timeline for that phase by 3 days.",
-        timeAgo: "About 17 minutes ago",
-        replies: [],
-      },
-    ],
-  },
-];
+import { MentionInput } from "./mention-input";
+import { useComments } from "@/context/comments-context";
 
 export function DiscussionPanel() {
-  const [comments, setComments] = useState<Comment[]>(INITIAL_COMMENTS);
+  const { comments, addComment } = useComments();
   const [newComment, setNewComment] = useState("");
-  const [hasNewActivity] = useState(true);
+  const hasNewActivity = comments.length > 0;
+  const listRef = useRef<HTMLDivElement>(null);
+  const prevCountRef = useRef(comments.length);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  useEffect(() => {
+    if (comments.length > prevCountRef.current) {
+      listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
+    }
+    prevCountRef.current = comments.length;
+  }, [comments.length]);
+
+  function handleSubmit() {
     const trimmed = newComment.trim();
     if (!trimmed) return;
-    setComments((prev) => [
-      ...prev,
-      {
-        id: String(Date.now()),
-        author: {
-          name: "Alex",
-          role: "Logistics Co",
-          avatarLetter: "A",
-        },
-        body: trimmed,
-        timeAgo: "Just now",
-        replies: [],
-      },
-    ]);
+    addComment(trimmed);
     setNewComment("");
-  }
-
-  function handleReply(commentId: string, body: string) {
-    const newReply: Comment = {
-      id: `${commentId}-${Date.now()}`,
-      author: {
-        name: "Sarah Miller",
-        role: "Team",
-        avatarLetter: "S",
-      },
-      body,
-      timeAgo: "Just now",
-      replies: [],
-    };
-    setComments((prev) =>
-      prev.map((c) =>
-        c.id === commentId
-          ? { ...c, replies: [...c.replies, newReply] }
-          : c
-      )
-    );
   }
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-2 pb-3 border-b border-border">
-        <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <MessageSquare className="size-4" />
+        <div className="flex size-8.5 items-center border justify-center rounded-lg text-primary">
+          <MessageSquareText className="size-5" />
         </div>
         <h2 className="text-sm font-semibold text-foreground">Discussion</h2>
         {hasNewActivity && (
@@ -94,40 +41,38 @@ export function DiscussionPanel() {
             aria-label="New activity"
           />
         )}
+        <span className="ml-auto text-xs text-muted-foreground">
+          {comments.length} thread{comments.length !== 1 ? "s" : ""}
+        </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-4 space-y-6 min-h-0">
-        {comments.map((comment) => (
-          <CommentThread
-            key={comment.id}
-            comment={comment}
-            onReply={handleReply}
-          />
-        ))}
+      <div ref={listRef} className="flex-1 overflow-y-auto py-4 space-y-6 min-h-0">
+        {comments.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground text-sm">
+            <MessageSquare className="size-8 mb-2 opacity-40" />
+            <p>No comments yet</p>
+            <p className="text-xs mt-1">Highlight text on the PDF or add a comment below</p>
+          </div>
+        ) : (
+          comments.map((comment) => (
+            <CommentThread key={comment.id} comment={comment} />
+          ))
+        )}
       </div>
 
       <form
-        onSubmit={handleSubmit}
+        onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
         className="pt-4 border-t border-border flex flex-col gap-2"
       >
-        <Textarea
-          placeholder="Add a comment..."
+        <MentionInput
           value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
+          onChange={setNewComment}
+          placeholder="Add a comment... (type @ to mention a page)"
           rows={2}
-          className="resize-none"
+          onSubmit={handleSubmit}
         />
-        <div className="flex items-center justify-between">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            className="text-muted-foreground"
-            aria-label="Attach file"
-          >
-            <Paperclip className="size-3.5" />
-          </Button>
-          <Button type="submit" size="sm" className="gap-1">
+        <div className="flex items-center justify-end">
+          <Button type="submit" size="sm" className="gap-1" disabled={!newComment.trim()}>
             <Send className="size-3.5" />
             Send
           </Button>

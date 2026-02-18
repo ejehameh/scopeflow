@@ -1,7 +1,28 @@
 export interface CommentAuthor {
   name: string;
-  role?: string; // e.g. "Logistics Co", "Team"
+  role?: string;
   avatarLetter: string;
+}
+
+export interface Reaction {
+  emoji: string;
+  authorName: string;
+}
+
+/** Bounding box of the highlighted text, as percentages of the page dimensions */
+export interface HighlightRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface CommentHighlight {
+  pageNumber: number;
+  text: string;
+  pinX: number;
+  pinY: number;
+  rects: HighlightRect[];
 }
 
 export interface Comment {
@@ -9,6 +30,9 @@ export interface Comment {
   author: CommentAuthor;
   body: string;
   timeAgo: string;
-  sectionId?: string; // optional: tie to document section
+  highlight?: CommentHighlight;
+  reactions: Reaction[];
+  resolved: boolean;
+  source: "annotation" | "standalone";
   replies: Comment[];
 }
