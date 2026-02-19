@@ -39,8 +39,7 @@ export function OnboardingDialog() {
             Highlight text to comment
           </AlertDialogTitle>
           <AlertDialogDescription className="max-sm:text-center">
-            Select any text or paragraph on the PDF to leave a comment pinned to
-            that exact spot. Your team will see the highlight and can reply
+            You can highlight any text on the document to leave a comment. Our team will see the highlight and can reply
             directly.
           </AlertDialogDescription>
         </AlertDialogHeader>
