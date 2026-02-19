@@ -234,6 +234,7 @@ function CommentPin({
         style={{
           left: `${pinX}%`,
           top: `${pinY}%`,
+          transform: "translateY(-100%)",
           pointerEvents: "auto",
           zIndex: isActive ? 9990 : 20,
         }}
