@@ -2,6 +2,7 @@
 
 import { ReviewNav } from "./review-nav";
 import { DiscussionPanel } from "./discussion-panel";
+import { OnboardingDialog } from "./onboarding-dialog";
 import { CommentsProvider } from "@/context/comments-context";
 
 interface ReviewLayoutProps {
@@ -11,6 +12,7 @@ interface ReviewLayoutProps {
 export function ReviewLayout({ PdfReviewView }: ReviewLayoutProps) {
   return (
     <CommentsProvider>
+      <OnboardingDialog />
       <div className="flex h-screen flex-col bg-background">
         <ReviewNav />
 
