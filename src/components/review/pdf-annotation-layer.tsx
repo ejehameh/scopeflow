@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useComments } from "@/context/comments-context";
 import { CommentPopup } from "./comment-popup";
 import { MentionInput } from "./mention-input";
@@ -181,6 +182,28 @@ export function PdfAnnotationLayer({ pageNumber }: PdfAnnotationLayerProps) {
   );
 }
 
+function useFloatingPosition(
+  pinRef: React.RefObject<HTMLElement | null>,
+  visible: boolean,
+  floatWidth: number,
+) {
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  useEffect(() => {
+    if (!visible || !pinRef.current) { setPos(null); return; }
+    const pin = pinRef.current.getBoundingClientRect();
+    const gap = 8;
+    const spaceRight = window.innerWidth - pin.right - gap;
+    const left = spaceRight >= floatWidth
+      ? pin.right + gap
+      : pin.left - floatWidth - gap;
+    const top = Math.max(8, Math.min(pin.top, window.innerHeight - 400));
+    setPos({ top, left: Math.max(8, left) });
+  }, [visible, pinRef, floatWidth]);
+
+  return pos;
+}
+
 function CommentPin({
   comment,
   isActive,
@@ -192,6 +215,21 @@ function CommentPin({
 }) {
   const { closePopup } = useComments();
   const [hovered, setHovered] = useState(false);
+  const pinBtnRef = useRef<HTMLButtonElement>(null);
+  const hideTimer = useRef<ReturnType<typeof setTimeout>>(null);
+
+  const showHover = () => {
+    if (hideTimer.current) { clearTimeout(hideTimer.current); hideTimer.current = null; }
+    setHovered(true);
+  };
+  const scheduleHide = () => {
+    hideTimer.current = setTimeout(() => setHovered(false), 150);
+  };
+
+  useEffect(() => () => { if (hideTimer.current) clearTimeout(hideTimer.current); }, []);
+
+  const hoverPos = useFloatingPosition(pinBtnRef, hovered && !isActive, 224);
+  const popupPos = useFloatingPosition(pinBtnRef, isActive, 320);
 
   if (!comment.highlight) return null;
   const { pinX, pinY, rects } = comment.highlight;
@@ -240,6 +278,7 @@ function CommentPin({
         }}
       >
         <button
+          ref={pinBtnRef}
           type="button"
           className={cn(
             "shadow-md bg-gray-800 cursor-pointer active:scale-95 p-1 rounded-t-full rounded-r-full border-2 transition-transform",
@@ -249,8 +288,8 @@ function CommentPin({
             isActive && "ring-2 ring-primary ring-offset-2 scale-110"
           )}
           onClick={(e) => { e.stopPropagation(); isActive ? closePopup() : onOpen(); }}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
+          onMouseEnter={showHover}
+          onMouseLeave={scheduleHide}
         >
           {comment.resolved ? (
             comment.author.avatarLetter
@@ -258,29 +297,41 @@ function CommentPin({
             <UserAvatar letter={comment.author.avatarLetter} />
           )}
         </button>
-
-        {/* Hover preview */}
-        {hovered && !isActive && (
-          <div className="absolute left-10 top-0 w-56 rounded-md border border-border bg-popover shadow-lg p-2.5" style={{ zIndex: 9980 }}>
-            <div className="flex items-center gap-1.5">
-              <UserAvatar letter={comment.author.avatarLetter} size="xs" />
-              <span className="text-xs font-medium">{comment.author.name}</span>
-              <span className="text-[10px] text-muted-foreground">{comment.timeAgo}</span>
-            </div>
-            <p className="text-xs text-foreground/80 mt-1 line-clamp-2">{comment.body}</p>
-            {comment.replies.length > 0 && (
-              <p className="text-[10px] text-primary mt-1">{comment.replies.length} repl{comment.replies.length === 1 ? "y" : "ies"}</p>
-            )}
-          </div>
-        )}
-
-        {/* Active popup */}
-        {isActive && (
-          <div className="absolute left-10 top-0" style={{ zIndex: 9999 }}>
-            <CommentPopup comment={comment} />
-          </div>
-        )}
       </div>
+
+      {/* Hover preview — portalled to body */}
+      {hovered && !isActive && hoverPos && createPortal(
+        <div
+          className="fixed w-56 rounded-md border border-border bg-popover shadow-lg p-2.5 cursor-pointer"
+          style={{ top: hoverPos.top, left: hoverPos.left, zIndex: 9980 }}
+          onMouseEnter={showHover}
+          onMouseLeave={scheduleHide}
+          onClick={(e) => { e.stopPropagation(); setHovered(false); onOpen(); }}
+        >
+          <div className="flex items-center gap-1.5">
+            <UserAvatar letter={comment.author.avatarLetter} size="xs" />
+            <span className="text-xs font-medium">{comment.author.name}</span>
+            <span className="text-[10px] text-muted-foreground">{comment.timeAgo}</span>
+          </div>
+          <p className="text-xs text-foreground/80 mt-1 line-clamp-2">{comment.body}</p>
+          {comment.replies.length > 0 && (
+            <p className="text-[10px] text-primary mt-1">{comment.replies.length} repl{comment.replies.length === 1 ? "y" : "ies"}</p>
+          )}
+        </div>,
+        document.body
+      )}
+
+      {/* Active popup — portalled to body */}
+      {isActive && popupPos && createPortal(
+        <div
+          className="fixed"
+          style={{ top: popupPos.top, left: popupPos.left, zIndex: 9999 }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <CommentPopup comment={comment} />
+        </div>,
+        document.body
+      )}
     </>
   );
 }
