@@ -46,7 +46,7 @@ export function ScopeLanding() {
               </Badge>
             </div>
 
-            <div className="flex items-center gap-6 mt-4 flex-wrap">
+            <div className="flex items-center gap-6 mt-4 justify-between px-2">
               <DetailChip icon={Users} label="Client" value="Alex - Logistics Co" />
               <DetailChip icon={Calendar} label="Timeline" value="12 weeks" />
               <DetailChip icon={DollarSign} label="Investment" value="£45,000" />
